@@ -14,10 +14,11 @@ export const Route = createFileRoute("/_authenticated/onboarding")({
 });
 
 const GOALS = [
-  { value: "love", label: "Amour" },
-  { value: "friendship", label: "Amitié" },
-  { value: "professional", label: "Pro / Réseau" },
+  { value: "amour" as const, label: "Amour" },
+  { value: "amitie" as const, label: "Amitié" },
+  { value: "pro" as const, label: "Pro / Réseau" },
 ];
+type Goal = typeof GOALS[number]["value"];
 const INTERESTS = ["Musique", "Cuisine", "Voyages", "Cinéma", "Sport", "Lecture", "Art", "Tech", "Mode", "Nature", "Danse", "Spiritualité"];
 const LANGS = ["Français", "English", "Fang", "Lingala", "Wolof", "Bambara", "Swahili", "Arabe", "Portugais"];
 
@@ -29,7 +30,7 @@ function Onboarding() {
   const [country, setCountry] = useState("Gabon");
   const [city, setCity] = useState("");
   const [birthdate, setBirthdate] = useState("");
-  const [goals, setGoals] = useState<string[]>([]);
+  const [goals, setGoals] = useState<Goal[]>([]);
   const [interests, setInterests] = useState<string[]>([]);
   const [languages, setLanguages] = useState<string[]>(["Français"]);
   const [loading, setLoading] = useState(false);
@@ -46,7 +47,7 @@ function Onboarding() {
         setCountry(data.country ?? "Gabon");
         setCity(data.city ?? "");
         setBirthdate(data.birthdate ?? "");
-        setGoals(data.goals ?? []);
+        setGoals((data.goals ?? []) as Goal[]);
         setInterests(data.interests ?? []);
         setLanguages(data.languages ?? ["Français"]);
         if (data.onboarded) navigate({ to: "/decouvrir" });
@@ -110,7 +111,7 @@ function Onboarding() {
           <div className="mt-2 flex flex-wrap gap-2">
             {GOALS.map((g) => (
               <Badge key={g.value} variant={goals.includes(g.value) ? "default" : "outline"}
-                onClick={() => toggle(goals, g.value, setGoals)} className="cursor-pointer">
+                onClick={() => setGoals(goals.includes(g.value) ? goals.filter((x) => x !== g.value) : [...goals, g.value])} className="cursor-pointer">
                 {g.label}
               </Badge>
             ))}
