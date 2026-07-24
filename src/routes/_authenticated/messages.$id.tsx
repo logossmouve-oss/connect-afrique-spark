@@ -73,8 +73,8 @@ function Conversation() {
     if (!conv || !me) return;
     const { data: m } = await supabase.from("matches").select("user_a,user_b").eq("id", conv.match_id).maybeSingle();
     if (!m) return;
-    const field = m.user_a === me ? "reveal_a" : "reveal_b";
-    const { error } = await supabase.from("conversations").update({ [field]: true }).eq("id", conv.id);
+    const update = m.user_a === me ? { reveal_a: true } : { reveal_b: true };
+    const { error } = await supabase.from("conversations").update(update).eq("id", conv.id);
     if (error) toast.error(error.message);
     else toast.success("Tu as choisi de te révéler ✨");
   }

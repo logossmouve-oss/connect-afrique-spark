@@ -17,6 +17,7 @@ import { Route as AuthenticatedProfilRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
 import { Route as AuthenticatedMessagesRouteImport } from './routes/_authenticated/messages'
 import { Route as AuthenticatedDecouvrirRouteImport } from './routes/_authenticated/decouvrir'
+import { Route as AuthenticatedMessagesIdRouteImport } from './routes/_authenticated/messages.$id'
 
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
@@ -57,24 +58,31 @@ const AuthenticatedDecouvrirRoute = AuthenticatedDecouvrirRouteImport.update({
   path: '/decouvrir',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedMessagesIdRoute = AuthenticatedMessagesIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => AuthenticatedMessagesRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
   '/decouvrir': typeof AuthenticatedDecouvrirRoute
-  '/messages': typeof AuthenticatedMessagesRoute
+  '/messages': typeof AuthenticatedMessagesRouteWithChildren
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/profil': typeof AuthenticatedProfilRoute
+  '/messages/$id': typeof AuthenticatedMessagesIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
   '/decouvrir': typeof AuthenticatedDecouvrirRoute
-  '/messages': typeof AuthenticatedMessagesRoute
+  '/messages': typeof AuthenticatedMessagesRouteWithChildren
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/profil': typeof AuthenticatedProfilRoute
+  '/messages/$id': typeof AuthenticatedMessagesIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -83,9 +91,10 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
   '/_authenticated/decouvrir': typeof AuthenticatedDecouvrirRoute
-  '/_authenticated/messages': typeof AuthenticatedMessagesRoute
+  '/_authenticated/messages': typeof AuthenticatedMessagesRouteWithChildren
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
   '/_authenticated/profil': typeof AuthenticatedProfilRoute
+  '/_authenticated/messages/$id': typeof AuthenticatedMessagesIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -97,6 +106,7 @@ export interface FileRouteTypes {
     | '/messages'
     | '/onboarding'
     | '/profil'
+    | '/messages/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -106,6 +116,7 @@ export interface FileRouteTypes {
     | '/messages'
     | '/onboarding'
     | '/profil'
+    | '/messages/$id'
   id:
     | '__root__'
     | '/'
@@ -116,6 +127,7 @@ export interface FileRouteTypes {
     | '/_authenticated/messages'
     | '/_authenticated/onboarding'
     | '/_authenticated/profil'
+    | '/_authenticated/messages/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -183,19 +195,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDecouvrirRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/messages/$id': {
+      id: '/_authenticated/messages/$id'
+      path: '/$id'
+      fullPath: '/messages/$id'
+      preLoaderRoute: typeof AuthenticatedMessagesIdRouteImport
+      parentRoute: typeof AuthenticatedMessagesRoute
+    }
   }
 }
 
+interface AuthenticatedMessagesRouteChildren {
+  AuthenticatedMessagesIdRoute: typeof AuthenticatedMessagesIdRoute
+}
+
+const AuthenticatedMessagesRouteChildren: AuthenticatedMessagesRouteChildren = {
+  AuthenticatedMessagesIdRoute: AuthenticatedMessagesIdRoute,
+}
+
+const AuthenticatedMessagesRouteWithChildren =
+  AuthenticatedMessagesRoute._addFileChildren(
+    AuthenticatedMessagesRouteChildren,
+  )
+
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedDecouvrirRoute: typeof AuthenticatedDecouvrirRoute
-  AuthenticatedMessagesRoute: typeof AuthenticatedMessagesRoute
+  AuthenticatedMessagesRoute: typeof AuthenticatedMessagesRouteWithChildren
   AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
   AuthenticatedProfilRoute: typeof AuthenticatedProfilRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDecouvrirRoute: AuthenticatedDecouvrirRoute,
-  AuthenticatedMessagesRoute: AuthenticatedMessagesRoute,
+  AuthenticatedMessagesRoute: AuthenticatedMessagesRouteWithChildren,
   AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
   AuthenticatedProfilRoute: AuthenticatedProfilRoute,
 }
