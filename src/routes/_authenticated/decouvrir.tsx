@@ -34,7 +34,7 @@ function Decouvrir() {
   const [loading, setLoading] = useState(true);
   const [history, setHistory] = useState<Action[]>([]);
   const [superToday, setSuperToday] = useState(0);
-  const [scores, setScores] = useState<Record<string, { score: number; rationale: string }>>({});
+  const [scores, setScores] = useState<Record<string, { score: number; rationale: string | null }>>({});
   const compat = useServerFn(computeCompatibility);
   const cardRefs = useRef<Record<string, any>>({});
 
