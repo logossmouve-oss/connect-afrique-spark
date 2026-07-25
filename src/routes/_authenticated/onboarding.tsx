@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+import { SiteHeader } from "@/components/monwe/SiteHeader";
 
 export const Route = createFileRoute("/_authenticated/onboarding")({
   head: () => ({ meta: [{ title: "Bienvenue — MonWé" }, { name: "robots", content: "noindex" }] }),
@@ -77,7 +78,9 @@ function Onboarding() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl px-4 py-12 sm:px-6">
+    <div className="min-h-screen bg-background">
+      <SiteHeader />
+      <main className="mx-auto max-w-2xl px-4 py-12 sm:px-6">
       <span className="monwe-chip">Ton code · {monweCode || "MW-…"}</span>
       <h1 className="mt-4 font-display text-4xl font-bold">Crée ton profil MonWé</h1>
       <p className="mt-2 text-muted-foreground">Reste anonyme derrière ton pseudo. Tu réveleras qui tu es quand tu voudras.</p>
@@ -146,6 +149,7 @@ function Onboarding() {
           {loading ? "…" : "Commencer à rencontrer"}
         </Button>
       </div>
+      </main>
     </div>
   );
 }
