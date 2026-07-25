@@ -1,4 +1,5 @@
-import { createFileRoute, useNavigate, Link, useServerFn } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useMemo, useRef, useState } from "react";
 import TinderCard from "react-tinder-card";
 import { supabase } from "@/integrations/supabase/client";
@@ -144,7 +145,7 @@ function Decouvrir() {
                 return (
                   <TinderCard
                     key={p.user_id}
-                    ref={(r) => { if (r) cardRefs.current[p.user_id] = r; }}
+                    ref={(r: any) => { if (r) cardRefs.current[p.user_id] = r; }}
                     onSwipe={(dir) => act(p, dir === "left" ? "pass" : dir === "up" ? "super" : "like")}
                     preventSwipe={["down"]}
                     className="absolute inset-0"
