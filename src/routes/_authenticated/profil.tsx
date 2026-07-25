@@ -20,6 +20,7 @@ function Profil() {
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -27,6 +28,10 @@ function Profil() {
       if (!u.user) return;
       const { data } = await supabase.from("profiles").select("*").eq("user_id", u.user.id).maybeSingle();
       setProfile(data);
+      if (data?.photo_url) {
+        const { data: signed } = await supabase.storage.from("avatars").createSignedUrl(data.photo_url, 3600);
+        setPhotoUrl(signed?.signedUrl ?? null);
+      }
     })();
   }, []);
 
@@ -52,6 +57,8 @@ function Profil() {
     if (error) { setUploading(false); return toast.error(error.message); }
     await supabase.from("profiles").update({ photo_url: path }).eq("user_id", profile.user_id);
     setProfile({ ...profile, photo_url: path });
+    const { data: signed } = await supabase.storage.from("avatars").createSignedUrl(path, 3600);
+    setPhotoUrl(signed?.signedUrl ?? null);
     setUploading(false);
     toast.success("Photo mise à jour");
   }
@@ -77,8 +84,8 @@ function Profil() {
           <div>
             <Label>Photo</Label>
             <div className="mt-2 flex items-center gap-4">
-              <div className="h-20 w-20 overflow-hidden rounded-full bg-muted flex items-center justify-center text-muted-foreground">
-                {profile.photo_url ? "📷" : "?"}
+              <div className={`h-20 w-20 overflow-hidden rounded-full bg-muted flex items-center justify-center text-muted-foreground ${profile.photo_blurred && photoUrl ? "blur-md" : ""}`}>
+                {photoUrl ? <img src={photoUrl} alt="Avatar" className="h-full w-full object-cover" /> : "?"}
               </div>
               <Input type="file" accept="image/*" onChange={uploadPhoto} disabled={uploading} />
             </div>
