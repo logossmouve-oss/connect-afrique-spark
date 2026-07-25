@@ -22,6 +22,16 @@ const GOALS = [
 type Goal = typeof GOALS[number]["value"];
 const INTERESTS = ["Musique", "Cuisine", "Voyages", "Cinéma", "Sport", "Lecture", "Art", "Tech", "Mode", "Nature", "Danse", "Spiritualité"];
 const LANGS = ["Français", "English", "Fang", "Lingala", "Wolof", "Bambara", "Swahili", "Arabe", "Portugais"];
+const PROMPT_POOL = [
+  "Ce qui me fait vibrer…",
+  "Un dimanche parfait pour moi…",
+  "Je ris fort quand…",
+  "Mon rêve un peu fou…",
+  "Ce que je cherche vraiment…",
+  "Le plat qui me rappelle chez moi…",
+  "Un truc que peu de gens savent sur moi…",
+];
+type Prompt = { question: string; answer: string };
 
 function Onboarding() {
   const navigate = useNavigate();
@@ -34,6 +44,7 @@ function Onboarding() {
   const [goals, setGoals] = useState<Goal[]>([]);
   const [interests, setInterests] = useState<string[]>([]);
   const [languages, setLanguages] = useState<string[]>(["Français"]);
+  const [prompts, setPrompts] = useState<Prompt[]>([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -51,6 +62,7 @@ function Onboarding() {
         setGoals((data.goals ?? []) as Goal[]);
         setInterests(data.interests ?? []);
         setLanguages(data.languages ?? ["Français"]);
+        setPrompts((data.prompts as Prompt[]) ?? []);
         if (data.onboarded) navigate({ to: "/decouvrir" });
       }
     })();
@@ -69,7 +81,7 @@ function Onboarding() {
     const { data: u } = await supabase.auth.getUser();
     if (!u.user) return;
     const { error } = await supabase.from("profiles").update({
-      pseudo, bio, country, city, birthdate, goals, interests, languages, onboarded: true,
+      pseudo, bio, country, city, birthdate, goals, interests, languages, prompts, onboarded: true,
     }).eq("user_id", u.user.id);
     setLoading(false);
     if (error) return toast.error(error.message);
@@ -142,6 +154,29 @@ function Onboarding() {
                 {l}
               </Badge>
             ))}
+          </div>
+        </div>
+
+        <div>
+          <Label>Icebreakers (3 max)</Label>
+          <p className="text-xs text-muted-foreground">Complète une phrase — pour donner envie de te parler.</p>
+          <div className="mt-2 space-y-3">
+            {prompts.map((p, i) => (
+              <div key={i} className="rounded-xl border border-border p-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">{p.question}</span>
+                  <button type="button" className="text-xs text-muted-foreground underline" onClick={() => setPrompts(prompts.filter((_, j) => j !== i))}>Retirer</button>
+                </div>
+                <Textarea rows={2} className="mt-2" value={p.answer} onChange={(e) => setPrompts(prompts.map((x, j) => j === i ? { ...x, answer: e.target.value } : x))} />
+              </div>
+            ))}
+            {prompts.length < 3 && (
+              <div className="flex flex-wrap gap-2">
+                {PROMPT_POOL.filter((q) => !prompts.some((p) => p.question === q)).map((q) => (
+                  <Badge key={q} variant="outline" onClick={() => setPrompts([...prompts, { question: q, answer: "" }])} className="cursor-pointer">+ {q}</Badge>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 

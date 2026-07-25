@@ -38,6 +38,9 @@ export function SiteHeader() {
               <Button asChild variant="ghost" size="sm">
                 <Link to="/messages">Messages</Link>
               </Button>
+              <Button asChild variant="ghost" size="sm">
+                <Link to="/premium">Premium</Link>
+              </Button>
               <Button asChild size="sm" className="rounded-full">
                 <Link to="/profil">Mon profil</Link>
               </Button>
