@@ -32,6 +32,30 @@ export type Database = {
         }
         Relationships: []
       }
+      compatibility_scores: {
+        Row: {
+          created_at: string
+          rationale: string | null
+          score: number
+          user_a: string
+          user_b: string
+        }
+        Insert: {
+          created_at?: string
+          rationale?: string | null
+          score: number
+          user_a: string
+          user_b: string
+        }
+        Update: {
+          created_at?: string
+          rationale?: string | null
+          score?: number
+          user_a?: string
+          user_b?: string
+        }
+        Relationships: []
+      }
       conversations: {
         Row: {
           created_at: string
@@ -72,18 +96,21 @@ export type Database = {
           created_at: string
           from_user: string
           id: string
+          is_super: boolean
           to_user: string
         }
         Insert: {
           created_at?: string
           from_user: string
           id?: string
+          is_super?: boolean
           to_user: string
         }
         Update: {
           created_at?: string
           from_user?: string
           id?: string
+          is_super?: boolean
           to_user?: string
         }
         Relationships: []
@@ -155,6 +182,8 @@ export type Database = {
           onboarded: boolean
           photo_blurred: boolean
           photo_url: string | null
+          premium_until: string | null
+          prompts: Json
           pseudo: string | null
           real_name: string | null
           updated_at: string
@@ -173,6 +202,8 @@ export type Database = {
           onboarded?: boolean
           photo_blurred?: boolean
           photo_url?: string | null
+          premium_until?: string | null
+          prompts?: Json
           pseudo?: string | null
           real_name?: string | null
           updated_at?: string
@@ -191,6 +222,8 @@ export type Database = {
           onboarded?: boolean
           photo_blurred?: boolean
           photo_url?: string | null
+          premium_until?: string | null
+          prompts?: Json
           pseudo?: string | null
           real_name?: string | null
           updated_at?: string
@@ -232,6 +265,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      subscriptions: {
+        Row: {
+          created_at: string
+          expires_at: string | null
+          id: string
+          plan: string
+          provider: string | null
+          provider_ref: string | null
+          started_at: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          plan?: string
+          provider?: string | null
+          provider_ref?: string | null
+          started_at?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          plan?: string
+          provider?: string | null
+          provider_ref?: string | null
+          started_at?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       user_roles: {
         Row: {
