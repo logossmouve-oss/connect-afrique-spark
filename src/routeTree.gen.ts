@@ -14,6 +14,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedProfilRouteImport } from './routes/_authenticated/profil'
+import { Route as AuthenticatedPremiumRouteImport } from './routes/_authenticated/premium'
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
 import { Route as AuthenticatedMessagesRouteImport } from './routes/_authenticated/messages'
 import { Route as AuthenticatedDecouvrirRouteImport } from './routes/_authenticated/decouvrir'
@@ -41,6 +42,11 @@ const IndexRoute = IndexRouteImport.update({
 const AuthenticatedProfilRoute = AuthenticatedProfilRouteImport.update({
   id: '/profil',
   path: '/profil',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedPremiumRoute = AuthenticatedPremiumRouteImport.update({
+  id: '/premium',
+  path: '/premium',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedOnboardingRoute = AuthenticatedOnboardingRouteImport.update({
@@ -71,6 +77,7 @@ export interface FileRoutesByFullPath {
   '/decouvrir': typeof AuthenticatedDecouvrirRoute
   '/messages': typeof AuthenticatedMessagesRouteWithChildren
   '/onboarding': typeof AuthenticatedOnboardingRoute
+  '/premium': typeof AuthenticatedPremiumRoute
   '/profil': typeof AuthenticatedProfilRoute
   '/messages/$id': typeof AuthenticatedMessagesIdRoute
 }
@@ -81,6 +88,7 @@ export interface FileRoutesByTo {
   '/decouvrir': typeof AuthenticatedDecouvrirRoute
   '/messages': typeof AuthenticatedMessagesRouteWithChildren
   '/onboarding': typeof AuthenticatedOnboardingRoute
+  '/premium': typeof AuthenticatedPremiumRoute
   '/profil': typeof AuthenticatedProfilRoute
   '/messages/$id': typeof AuthenticatedMessagesIdRoute
 }
@@ -93,6 +101,7 @@ export interface FileRoutesById {
   '/_authenticated/decouvrir': typeof AuthenticatedDecouvrirRoute
   '/_authenticated/messages': typeof AuthenticatedMessagesRouteWithChildren
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
+  '/_authenticated/premium': typeof AuthenticatedPremiumRoute
   '/_authenticated/profil': typeof AuthenticatedProfilRoute
   '/_authenticated/messages/$id': typeof AuthenticatedMessagesIdRoute
 }
@@ -105,6 +114,7 @@ export interface FileRouteTypes {
     | '/decouvrir'
     | '/messages'
     | '/onboarding'
+    | '/premium'
     | '/profil'
     | '/messages/$id'
   fileRoutesByTo: FileRoutesByTo
@@ -115,6 +125,7 @@ export interface FileRouteTypes {
     | '/decouvrir'
     | '/messages'
     | '/onboarding'
+    | '/premium'
     | '/profil'
     | '/messages/$id'
   id:
@@ -126,6 +137,7 @@ export interface FileRouteTypes {
     | '/_authenticated/decouvrir'
     | '/_authenticated/messages'
     | '/_authenticated/onboarding'
+    | '/_authenticated/premium'
     | '/_authenticated/profil'
     | '/_authenticated/messages/$id'
   fileRoutesById: FileRoutesById
@@ -172,6 +184,13 @@ declare module '@tanstack/react-router' {
       path: '/profil'
       fullPath: '/profil'
       preLoaderRoute: typeof AuthenticatedProfilRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/premium': {
+      id: '/_authenticated/premium'
+      path: '/premium'
+      fullPath: '/premium'
+      preLoaderRoute: typeof AuthenticatedPremiumRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/onboarding': {
@@ -222,6 +241,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedDecouvrirRoute: typeof AuthenticatedDecouvrirRoute
   AuthenticatedMessagesRoute: typeof AuthenticatedMessagesRouteWithChildren
   AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
+  AuthenticatedPremiumRoute: typeof AuthenticatedPremiumRoute
   AuthenticatedProfilRoute: typeof AuthenticatedProfilRoute
 }
 
@@ -229,6 +249,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDecouvrirRoute: AuthenticatedDecouvrirRoute,
   AuthenticatedMessagesRoute: AuthenticatedMessagesRouteWithChildren,
   AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
+  AuthenticatedPremiumRoute: AuthenticatedPremiumRoute,
   AuthenticatedProfilRoute: AuthenticatedProfilRoute,
 }
 

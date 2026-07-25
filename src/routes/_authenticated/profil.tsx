@@ -10,6 +10,17 @@ import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { SiteHeader } from "@/components/monwe/SiteHeader";
 
+const PROMPT_POOL = [
+  "Ce qui me fait vibrer…",
+  "Un dimanche parfait pour moi…",
+  "Je ris fort quand…",
+  "Mon rêve un peu fou…",
+  "Ce que je cherche vraiment…",
+  "Le plat qui me rappelle chez moi…",
+  "Un truc que peu de gens savent sur moi…",
+];
+type Prompt = { question: string; answer: string };
+
 export const Route = createFileRoute("/_authenticated/profil")({
   head: () => ({ meta: [{ title: "Mon profil — MonWé" }, { name: "robots", content: "noindex" }] }),
   component: Profil,
@@ -42,6 +53,7 @@ function Profil() {
       pseudo: profile.pseudo, real_name: profile.real_name, bio: profile.bio,
       country: profile.country, city: profile.city,
       photo_blurred: profile.photo_blurred,
+      prompts: profile.prompts ?? [],
     }).eq("user_id", profile.user_id);
     setLoading(false);
     if (error) return toast.error(error.message);
@@ -119,6 +131,32 @@ function Profil() {
           <div className="flex flex-wrap gap-2">
             {(profile.goals ?? []).map((g: string) => <Badge key={g}>{g}</Badge>)}
             {(profile.interests ?? []).map((i: string) => <Badge key={i} variant="outline">{i}</Badge>)}
+          </div>
+
+          <div>
+            <Label>Icebreakers</Label>
+            <p className="text-xs text-muted-foreground">Ce que les autres voient sur ton profil pour briser la glace.</p>
+            <div className="mt-2 space-y-3">
+              {((profile.prompts ?? []) as Prompt[]).map((p, i) => (
+                <div key={i} className="rounded-xl border border-border p-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium">{p.question}</span>
+                    <button type="button" className="text-xs text-muted-foreground underline"
+                      onClick={() => setProfile({ ...profile, prompts: (profile.prompts as Prompt[]).filter((_: Prompt, j: number) => j !== i) })}>Retirer</button>
+                  </div>
+                  <Textarea rows={2} className="mt-2" value={p.answer}
+                    onChange={(e) => setProfile({ ...profile, prompts: (profile.prompts as Prompt[]).map((x: Prompt, j: number) => j === i ? { ...x, answer: e.target.value } : x) })} />
+                </div>
+              ))}
+              {((profile.prompts ?? []) as Prompt[]).length < 3 && (
+                <div className="flex flex-wrap gap-2">
+                  {PROMPT_POOL.filter((q) => !((profile.prompts ?? []) as Prompt[]).some((p) => p.question === q)).map((q) => (
+                    <Badge key={q} variant="outline" className="cursor-pointer"
+                      onClick={() => setProfile({ ...profile, prompts: [...((profile.prompts ?? []) as Prompt[]), { question: q, answer: "" }] })}>+ {q}</Badge>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="flex gap-3">
