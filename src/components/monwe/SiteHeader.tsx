@@ -36,6 +36,9 @@ export function SiteHeader() {
                 <Link to="/decouvrir">Découvrir</Link>
               </Button>
               <Button asChild variant="ghost" size="sm">
+                <Link to="/mes-likes">Likes</Link>
+              </Button>
+              <Button asChild variant="ghost" size="sm">
                 <Link to="/messages">Messages</Link>
               </Button>
               <Button asChild variant="ghost" size="sm">
