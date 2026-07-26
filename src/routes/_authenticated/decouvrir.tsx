@@ -139,7 +139,46 @@ function Decouvrir() {
           <span>Super Like : {Math.max(0, 1 - superToday)}/1 aujourd'hui</span>
           <span>·</span>
           <button onClick={rewind} disabled={history.length === 0} className="underline disabled:opacity-40">Retour</button>
+          <span>·</span>
+          <button onClick={() => setShowFilters((s) => !s)} className="underline">
+            Filtres{isPremium ? "" : " 🔒"}
+          </button>
         </div>
+
+        {showFilters && (
+          <div className="mt-4 rounded-2xl border border-border bg-card p-4">
+            {!isPremium ? (
+              <div className="text-center">
+                <div className="text-sm">Les filtres avancés sont réservés à <span className="font-semibold">Premium</span>.</div>
+                <Button asChild size="sm" className="mt-3 rounded-full"><Link to="/premium">Passer Premium</Link></Button>
+              </div>
+            ) : (
+              <div className="grid gap-3 sm:grid-cols-2">
+                <label className="text-xs">
+                  <span className="text-muted-foreground">Objectif</span>
+                  <select value={fGoal} onChange={(e) => setFGoal(e.target.value)} className="mt-1 w-full rounded-md border border-input bg-background px-2 py-1 text-sm">
+                    <option value="">Tous</option>
+                    <option value="amour">Amour</option>
+                    <option value="amitie">Amitié</option>
+                    <option value="pro">Pro</option>
+                  </select>
+                </label>
+                <label className="text-xs">
+                  <span className="text-muted-foreground">Pays</span>
+                  <input value={fCountry} onChange={(e) => setFCountry(e.target.value)} placeholder="ex. Sénégal" className="mt-1 w-full rounded-md border border-input bg-background px-2 py-1 text-sm" />
+                </label>
+                <label className="text-xs">
+                  <span className="text-muted-foreground">Âge min : {fAgeMin}</span>
+                  <input type="range" min={18} max={80} value={fAgeMin} onChange={(e) => setFAgeMin(+e.target.value)} className="mt-1 w-full" />
+                </label>
+                <label className="text-xs">
+                  <span className="text-muted-foreground">Âge max : {fAgeMax}</span>
+                  <input type="range" min={18} max={80} value={fAgeMax} onChange={(e) => setFAgeMax(+e.target.value)} className="mt-1 w-full" />
+                </label>
+              </div>
+            )}
+          </div>
+        )}
 
         {loading ? (
           <div className="mt-16 text-center text-muted-foreground">Chargement…</div>
