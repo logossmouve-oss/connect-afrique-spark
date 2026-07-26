@@ -142,6 +142,7 @@ export type Database = {
           conversation_id: string
           created_at: string
           id: string
+          read_at: string | null
           sender_id: string
         }
         Insert: {
@@ -149,6 +150,7 @@ export type Database = {
           conversation_id: string
           created_at?: string
           id?: string
+          read_at?: string | null
           sender_id: string
         }
         Update: {
@@ -156,6 +158,7 @@ export type Database = {
           conversation_id?: string
           created_at?: string
           id?: string
+          read_at?: string | null
           sender_id?: string
         }
         Relationships: [
@@ -175,9 +178,12 @@ export type Database = {
           city: string | null
           country: string | null
           created_at: string
+          discover_city: string | null
+          discover_country: string | null
           goals: Database["public"]["Enums"]["relationship_goal"][]
           interests: string[]
           languages: string[]
+          last_seen: string | null
           monwe_code: string | null
           onboarded: boolean
           photo_blurred: boolean
@@ -195,9 +201,12 @@ export type Database = {
           city?: string | null
           country?: string | null
           created_at?: string
+          discover_city?: string | null
+          discover_country?: string | null
           goals?: Database["public"]["Enums"]["relationship_goal"][]
           interests?: string[]
           languages?: string[]
+          last_seen?: string | null
           monwe_code?: string | null
           onboarded?: boolean
           photo_blurred?: boolean
@@ -215,9 +224,12 @@ export type Database = {
           city?: string | null
           country?: string | null
           created_at?: string
+          discover_city?: string | null
+          discover_country?: string | null
           goals?: Database["public"]["Enums"]["relationship_goal"][]
           interests?: string[]
           languages?: string[]
+          last_seen?: string | null
           monwe_code?: string | null
           onboarded?: boolean
           photo_blurred?: boolean
