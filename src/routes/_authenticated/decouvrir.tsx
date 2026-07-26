@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { SiteHeader } from "@/components/monwe/SiteHeader";
 import { computeCompatibility } from "@/lib/compat.functions";
+import { usePremium } from "@/hooks/use-premium";
 
 export const Route = createFileRoute("/_authenticated/decouvrir")({
   head: () => ({ meta: [{ title: "Découvrir — MonWé" }, { name: "robots", content: "noindex" }] }),
@@ -37,8 +38,14 @@ function Decouvrir() {
   const [scores, setScores] = useState<Record<string, { score: number; rationale: string | null }>>({});
   const compat = useServerFn(computeCompatibility);
   const cardRefs = useRef<Record<string, any>>({});
+  const { isPremium } = usePremium();
+  const [showFilters, setShowFilters] = useState(false);
+  const [fGoal, setFGoal] = useState<string>("");
+  const [fCountry, setFCountry] = useState<string>("");
+  const [fAgeMin, setFAgeMin] = useState<number>(18);
+  const [fAgeMax, setFAgeMax] = useState<number>(80);
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => { load(); }, [fGoal, fCountry, fAgeMin, fAgeMax]);
 
   async function load() {
     setLoading(true);
@@ -55,7 +62,16 @@ function Decouvrir() {
 
     const { data } = await supabase.from("profiles").select("user_id,pseudo,monwe_code,bio,country,city,interests,goals,languages,birthdate,prompts")
       .eq("onboarded", true).limit(50);
-    const list = (data ?? []).filter((p) => !excluded.has(p.user_id)) as Profile[];
+    let list = (data ?? []).filter((p) => !excluded.has(p.user_id)) as Profile[];
+    if (isPremium) {
+      if (fGoal) list = list.filter((p) => p.goals?.includes(fGoal));
+      if (fCountry) list = list.filter((p) => (p.country ?? "").toLowerCase().includes(fCountry.toLowerCase()));
+      list = list.filter((p) => {
+        const a = age(p.birthdate);
+        if (a === null) return true;
+        return a >= fAgeMin && a <= fAgeMax;
+      });
+    }
     setProfiles(list);
 
     const today = new Date().toISOString().slice(0, 10);
