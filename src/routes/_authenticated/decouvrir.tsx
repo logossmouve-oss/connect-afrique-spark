@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { SiteHeader } from "@/components/monwe/SiteHeader";
 import { computeCompatibility } from "@/lib/compat.functions";
+import { usePremium } from "@/hooks/use-premium";
 
 export const Route = createFileRoute("/_authenticated/decouvrir")({
   head: () => ({ meta: [{ title: "Découvrir — MonWé" }, { name: "robots", content: "noindex" }] }),
@@ -37,8 +38,14 @@ function Decouvrir() {
   const [scores, setScores] = useState<Record<string, { score: number; rationale: string | null }>>({});
   const compat = useServerFn(computeCompatibility);
   const cardRefs = useRef<Record<string, any>>({});
+  const { isPremium } = usePremium();
+  const [showFilters, setShowFilters] = useState(false);
+  const [fGoal, setFGoal] = useState<string>("");
+  const [fCountry, setFCountry] = useState<string>("");
+  const [fAgeMin, setFAgeMin] = useState<number>(18);
+  const [fAgeMax, setFAgeMax] = useState<number>(80);
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => { load(); }, [fGoal, fCountry, fAgeMin, fAgeMax]);
 
   async function load() {
     setLoading(true);
@@ -55,7 +62,16 @@ function Decouvrir() {
 
     const { data } = await supabase.from("profiles").select("user_id,pseudo,monwe_code,bio,country,city,interests,goals,languages,birthdate,prompts")
       .eq("onboarded", true).limit(50);
-    const list = (data ?? []).filter((p) => !excluded.has(p.user_id)) as Profile[];
+    let list = (data ?? []).filter((p) => !excluded.has(p.user_id)) as Profile[];
+    if (isPremium) {
+      if (fGoal) list = list.filter((p) => p.goals?.includes(fGoal));
+      if (fCountry) list = list.filter((p) => (p.country ?? "").toLowerCase().includes(fCountry.toLowerCase()));
+      list = list.filter((p) => {
+        const a = age(p.birthdate);
+        if (a === null) return true;
+        return a >= fAgeMin && a <= fAgeMax;
+      });
+    }
     setProfiles(list);
 
     const today = new Date().toISOString().slice(0, 10);
@@ -123,7 +139,46 @@ function Decouvrir() {
           <span>Super Like : {Math.max(0, 1 - superToday)}/1 aujourd'hui</span>
           <span>·</span>
           <button onClick={rewind} disabled={history.length === 0} className="underline disabled:opacity-40">Retour</button>
+          <span>·</span>
+          <button onClick={() => setShowFilters((s) => !s)} className="underline">
+            Filtres{isPremium ? "" : " 🔒"}
+          </button>
         </div>
+
+        {showFilters && (
+          <div className="mt-4 rounded-2xl border border-border bg-card p-4">
+            {!isPremium ? (
+              <div className="text-center">
+                <div className="text-sm">Les filtres avancés sont réservés à <span className="font-semibold">Premium</span>.</div>
+                <Button asChild size="sm" className="mt-3 rounded-full"><Link to="/premium">Passer Premium</Link></Button>
+              </div>
+            ) : (
+              <div className="grid gap-3 sm:grid-cols-2">
+                <label className="text-xs">
+                  <span className="text-muted-foreground">Objectif</span>
+                  <select value={fGoal} onChange={(e) => setFGoal(e.target.value)} className="mt-1 w-full rounded-md border border-input bg-background px-2 py-1 text-sm">
+                    <option value="">Tous</option>
+                    <option value="amour">Amour</option>
+                    <option value="amitie">Amitié</option>
+                    <option value="pro">Pro</option>
+                  </select>
+                </label>
+                <label className="text-xs">
+                  <span className="text-muted-foreground">Pays</span>
+                  <input value={fCountry} onChange={(e) => setFCountry(e.target.value)} placeholder="ex. Sénégal" className="mt-1 w-full rounded-md border border-input bg-background px-2 py-1 text-sm" />
+                </label>
+                <label className="text-xs">
+                  <span className="text-muted-foreground">Âge min : {fAgeMin}</span>
+                  <input type="range" min={18} max={80} value={fAgeMin} onChange={(e) => setFAgeMin(+e.target.value)} className="mt-1 w-full" />
+                </label>
+                <label className="text-xs">
+                  <span className="text-muted-foreground">Âge max : {fAgeMax}</span>
+                  <input type="range" min={18} max={80} value={fAgeMax} onChange={(e) => setFAgeMax(+e.target.value)} className="mt-1 w-full" />
+                </label>
+              </div>
+            )}
+          </div>
+        )}
 
         {loading ? (
           <div className="mt-16 text-center text-muted-foreground">Chargement…</div>
