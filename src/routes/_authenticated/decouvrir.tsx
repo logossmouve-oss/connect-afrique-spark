@@ -42,10 +42,12 @@ function Decouvrir() {
   const [showFilters, setShowFilters] = useState(false);
   const [fGoal, setFGoal] = useState<string>("");
   const [fCountry, setFCountry] = useState<string>("");
+  const [fCity, setFCity] = useState<string>("");
   const [fAgeMin, setFAgeMin] = useState<number>(18);
   const [fAgeMax, setFAgeMax] = useState<number>(80);
+  const [passport, setPassport] = useState<{ country: string | null; city: string | null } | null>(null);
 
-  useEffect(() => { load(); }, [fGoal, fCountry, fAgeMin, fAgeMax]);
+  useEffect(() => { load(); }, [fGoal, fCountry, fCity, fAgeMin, fAgeMax]);
 
   async function load() {
     setLoading(true);
