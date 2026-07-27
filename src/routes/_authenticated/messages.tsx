@@ -84,17 +84,37 @@ function Messages() {
           <ul className="mt-6 space-y-2">
             {rows.map((r) => {
               const revealed = r.reveal_a && r.reveal_b;
+              const online = isOnline(r.other?.last_seen);
               return (
                 <li key={r.id}>
                   <Link to="/messages/$id" params={{ id: r.id }}
                     className="flex items-center justify-between rounded-2xl border border-border bg-card p-4 hover:bg-accent/50 transition">
-                    <div>
-                      <div className="font-semibold">
-                        {revealed ? r.other?.real_name || r.other?.pseudo : r.other?.pseudo ?? "Anonyme"}
+                    <div className="flex items-center gap-3">
+                      <div className="relative">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted font-display text-sm font-bold">
+                          {(r.other?.pseudo ?? "?")[0]?.toUpperCase()}
+                        </div>
+                        {online && (
+                          <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full bg-green-500 ring-2 ring-background" />
+                        )}
                       </div>
-                      <div className="text-xs text-muted-foreground">{r.other?.monwe_code}</div>
+                      <div>
+                        <div className="font-semibold">
+                          {revealed ? r.other?.real_name || r.other?.pseudo : r.other?.pseudo ?? "Anonyme"}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          {r.other?.monwe_code} {online && "· En ligne"}
+                        </div>
+                      </div>
                     </div>
-                    {revealed && <span className="monwe-chip">Révélés</span>}
+                    <div className="flex items-center gap-2">
+                      {r.unread_count > 0 && (
+                        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] font-medium text-primary-foreground">
+                          {r.unread_count}
+                        </span>
+                      )}
+                      {revealed && <span className="monwe-chip">Révélés</span>}
+                    </div>
                   </Link>
                 </li>
               );
