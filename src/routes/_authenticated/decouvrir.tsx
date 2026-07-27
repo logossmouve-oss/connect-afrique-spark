@@ -42,10 +42,12 @@ function Decouvrir() {
   const [showFilters, setShowFilters] = useState(false);
   const [fGoal, setFGoal] = useState<string>("");
   const [fCountry, setFCountry] = useState<string>("");
+  const [fCity, setFCity] = useState<string>("");
   const [fAgeMin, setFAgeMin] = useState<number>(18);
   const [fAgeMax, setFAgeMax] = useState<number>(80);
+  const [passport, setPassport] = useState<{ country: string | null; city: string | null } | null>(null);
 
-  useEffect(() => { load(); }, [fGoal, fCountry, fAgeMin, fAgeMax]);
+  useEffect(() => { load(); }, [fGoal, fCountry, fCity, fAgeMin, fAgeMax]);
 
   async function load() {
     setLoading(true);
@@ -53,8 +55,13 @@ function Decouvrir() {
     if (!u.user) return;
     setMe(u.user.id);
 
-    const { data: mine } = await supabase.from("profiles").select("onboarded").eq("user_id", u.user.id).maybeSingle();
+    const { data: mine } = await supabase.from("profiles").select("onboarded,country,city,discover_country,discover_city").eq("user_id", u.user.id).maybeSingle();
     if (!mine?.onboarded) { navigate({ to: "/onboarding" }); return; }
+
+    const defaultCountry = (mine.discover_country || mine.country || "").trim();
+    const defaultCity = (mine.discover_city || mine.city || "").trim();
+    const isPassport = !!(mine.discover_country || mine.discover_city);
+    setPassport(isPassport ? { country: mine.discover_country, city: mine.discover_city } : null);
 
     const { data: liked } = await supabase.from("likes").select("to_user").eq("from_user", u.user.id);
     const { data: blocked } = await supabase.from("blocks").select("blocked_id").eq("blocker_id", u.user.id);
@@ -63,15 +70,18 @@ function Decouvrir() {
     const { data } = await supabase.from("profiles").select("user_id,pseudo,monwe_code,bio,country,city,interests,goals,languages,birthdate,prompts")
       .eq("onboarded", true).limit(50);
     let list = (data ?? []).filter((p) => !excluded.has(p.user_id)) as Profile[];
-    if (isPremium) {
-      if (fGoal) list = list.filter((p) => p.goals?.includes(fGoal));
-      if (fCountry) list = list.filter((p) => (p.country ?? "").toLowerCase().includes(fCountry.toLowerCase()));
-      list = list.filter((p) => {
-        const a = age(p.birthdate);
-        if (a === null) return true;
-        return a >= fAgeMin && a <= fAgeMax;
-      });
-    }
+
+    const countryFilter = (isPremium ? fCountry : defaultCountry).trim().toLowerCase();
+    const cityFilter = (isPremium ? fCity : defaultCity).trim().toLowerCase();
+    if (countryFilter) list = list.filter((p) => (p.country ?? "").toLowerCase().includes(countryFilter));
+    if (cityFilter) list = list.filter((p) => (p.city ?? "").toLowerCase().includes(cityFilter));
+    if (isPremium && fGoal) list = list.filter((p) => p.goals?.includes(fGoal));
+    list = list.filter((p) => {
+      const a = age(p.birthdate);
+      if (a === null) return true;
+      return a >= fAgeMin && a <= fAgeMax;
+    });
+
     setProfiles(list);
 
     const today = new Date().toISOString().slice(0, 10);
@@ -143,6 +153,11 @@ function Decouvrir() {
           <button onClick={() => setShowFilters((s) => !s)} className="underline">
             Filtres{isPremium ? "" : " 🔒"}
           </button>
+          {passport && (
+            <span className="ml-auto rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary">
+              🛂 Passport {passport.city ?? passport.country}
+            </span>
+          )}
         </div>
 
         {showFilters && (
@@ -150,6 +165,7 @@ function Decouvrir() {
             {!isPremium ? (
               <div className="text-center">
                 <div className="text-sm">Les filtres avancés sont réservés à <span className="font-semibold">Premium</span>.</div>
+                <div className="mt-1 text-xs text-muted-foreground">Par défaut on te montre les profils près de chez toi.</div>
                 <Button asChild size="sm" className="mt-3 rounded-full"><Link to="/premium">Passer Premium</Link></Button>
               </div>
             ) : (
@@ -168,10 +184,14 @@ function Decouvrir() {
                   <input value={fCountry} onChange={(e) => setFCountry(e.target.value)} placeholder="ex. Sénégal" className="mt-1 w-full rounded-md border border-input bg-background px-2 py-1 text-sm" />
                 </label>
                 <label className="text-xs">
+                  <span className="text-muted-foreground">Ville</span>
+                  <input value={fCity} onChange={(e) => setFCity(e.target.value)} placeholder="ex. Dakar" className="mt-1 w-full rounded-md border border-input bg-background px-2 py-1 text-sm" />
+                </label>
+                <label className="text-xs">
                   <span className="text-muted-foreground">Âge min : {fAgeMin}</span>
                   <input type="range" min={18} max={80} value={fAgeMin} onChange={(e) => setFAgeMin(+e.target.value)} className="mt-1 w-full" />
                 </label>
-                <label className="text-xs">
+                <label className="text-xs sm:col-span-2">
                   <span className="text-muted-foreground">Âge max : {fAgeMax}</span>
                   <input type="range" min={18} max={80} value={fAgeMax} onChange={(e) => setFAgeMax(+e.target.value)} className="mt-1 w-full" />
                 </label>

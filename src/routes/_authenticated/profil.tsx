@@ -52,6 +52,7 @@ function Profil() {
     const { error } = await supabase.from("profiles").update({
       pseudo: profile.pseudo, real_name: profile.real_name, bio: profile.bio,
       country: profile.country, city: profile.city,
+      discover_country: profile.discover_country, discover_city: profile.discover_city,
       photo_blurred: profile.photo_blurred,
       prompts: profile.prompts ?? [],
     }).eq("user_id", profile.user_id);
@@ -122,6 +123,31 @@ function Profil() {
           <div className="grid gap-4 sm:grid-cols-2">
             <div><Label>Pays</Label><Input value={profile.country ?? ""} onChange={(e) => setProfile({ ...profile, country: e.target.value })} /></div>
             <div><Label>Ville</Label><Input value={profile.city ?? ""} onChange={(e) => setProfile({ ...profile, city: e.target.value })} /></div>
+          </div>
+
+          <div className="rounded-2xl border border-border bg-card p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="font-display font-semibold">🛂 Mode Passport</div>
+                <div className="text-sm text-muted-foreground">Découvre des profils dans une autre ville sans bouger.</div>
+              </div>
+            </div>
+            <div className="mt-3 grid gap-4 sm:grid-cols-2">
+              <div>
+                <Label className="text-xs text-muted-foreground">Pays de découverte</Label>
+                <Input value={profile.discover_country ?? ""} placeholder={profile.country ?? "ex. Côte d'Ivoire"}
+                  onChange={(e) => setProfile({ ...profile, discover_country: e.target.value })} />
+              </div>
+              <div>
+                <Label className="text-xs text-muted-foreground">Ville de découverte</Label>
+                <Input value={profile.discover_city ?? ""} placeholder={profile.city ?? "ex. Abidjan"}
+                  onChange={(e) => setProfile({ ...profile, discover_city: e.target.value })} />
+              </div>
+            </div>
+            <button type="button" className="mt-3 text-xs text-muted-foreground underline"
+              onClick={() => setProfile({ ...profile, discover_country: "", discover_city: "" })}>
+              Revenir à ma localisation réelle
+            </button>
           </div>
           <div>
             <Label htmlFor="bio">Bio</Label>
