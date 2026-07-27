@@ -17,6 +17,7 @@ type Row = {
 };
 
 function Messages() {
+  useOnlineHeartbeat();
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -33,18 +34,33 @@ function Messages() {
       const { data: convs } = await supabase.from("conversations")
         .select("id,match_id,last_message_at,reveal_a,reveal_b")
         .in("match_id", matchIds).order("last_message_at", { ascending: false, nullsFirst: false });
+      const convIds = (convs ?? []).map((c) => c.id);
 
       const otherIds = (matches ?? []).map((m) => m.user_a === u.user!.id ? m.user_b : m.user_a);
       const { data: profs } = await supabase.from("profiles")
-        .select("user_id,pseudo,monwe_code,real_name").in("user_id", otherIds);
+        .select("user_id,pseudo,monwe_code,real_name,last_seen").in("user_id", otherIds);
+
+      const { data: unread } = await supabase.from("messages")
+        .select("conversation_id, id", { count: "exact", head: false })
+        .in("conversation_id", convIds)
+        .neq("sender_id", u.user.id)
+        .is("read_at", null);
+      const unreadMap = new Map<string, number>();
+      (unread ?? []).forEach((m) => {
+        unreadMap.set(m.conversation_id, (unreadMap.get(m.conversation_id) ?? 0) + 1);
+      });
 
       const matchToOther = new Map((matches ?? []).map((m) => [m.id, m.user_a === u.user!.id ? m.user_b : m.user_a]));
       const profMap = new Map((profs ?? []).map((p) => [p.user_id, p]));
 
-      setRows((convs ?? []).map((c) => ({
-        ...c,
-        other: (profMap.get(matchToOther.get(c.match_id) ?? "") ?? null) as Row["other"],
-      })) as Row[]);
+      setRows((convs ?? []).map((c) => {
+        const other = profMap.get(matchToOther.get(c.match_id) ?? "") ?? null;
+        return {
+          ...c,
+          other: other as Row["other"],
+          unread_count: unreadMap.get(c.id) ?? 0,
+        };
+      }));
       setLoading(false);
     })();
   }, []);
