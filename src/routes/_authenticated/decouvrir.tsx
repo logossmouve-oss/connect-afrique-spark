@@ -157,6 +157,11 @@ function Decouvrir() {
           <button onClick={() => setShowFilters((s) => !s)} className="underline">
             Filtres{isPremium ? "" : " 🔒"}
           </button>
+          {passport && (
+            <span className="ml-auto rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary">
+              🛂 Passport {passport.city ?? passport.country}
+            </span>
+          )}
         </div>
 
         {showFilters && (
@@ -164,6 +169,7 @@ function Decouvrir() {
             {!isPremium ? (
               <div className="text-center">
                 <div className="text-sm">Les filtres avancés sont réservés à <span className="font-semibold">Premium</span>.</div>
+                <div className="mt-1 text-xs text-muted-foreground">Par défaut on te montre les profils près de chez toi.</div>
                 <Button asChild size="sm" className="mt-3 rounded-full"><Link to="/premium">Passer Premium</Link></Button>
               </div>
             ) : (
@@ -182,10 +188,14 @@ function Decouvrir() {
                   <input value={fCountry} onChange={(e) => setFCountry(e.target.value)} placeholder="ex. Sénégal" className="mt-1 w-full rounded-md border border-input bg-background px-2 py-1 text-sm" />
                 </label>
                 <label className="text-xs">
+                  <span className="text-muted-foreground">Ville</span>
+                  <input value={fCity} onChange={(e) => setFCity(e.target.value)} placeholder="ex. Dakar" className="mt-1 w-full rounded-md border border-input bg-background px-2 py-1 text-sm" />
+                </label>
+                <label className="text-xs">
                   <span className="text-muted-foreground">Âge min : {fAgeMin}</span>
                   <input type="range" min={18} max={80} value={fAgeMin} onChange={(e) => setFAgeMin(+e.target.value)} className="mt-1 w-full" />
                 </label>
-                <label className="text-xs">
+                <label className="text-xs sm:col-span-2">
                   <span className="text-muted-foreground">Âge max : {fAgeMax}</span>
                   <input type="range" min={18} max={80} value={fAgeMax} onChange={(e) => setFAgeMax(+e.target.value)} className="mt-1 w-full" />
                 </label>
