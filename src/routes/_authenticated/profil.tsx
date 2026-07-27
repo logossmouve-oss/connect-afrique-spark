@@ -52,6 +52,7 @@ function Profil() {
     const { error } = await supabase.from("profiles").update({
       pseudo: profile.pseudo, real_name: profile.real_name, bio: profile.bio,
       country: profile.country, city: profile.city,
+      discover_country: profile.discover_country, discover_city: profile.discover_city,
       photo_blurred: profile.photo_blurred,
       prompts: profile.prompts ?? [],
     }).eq("user_id", profile.user_id);
