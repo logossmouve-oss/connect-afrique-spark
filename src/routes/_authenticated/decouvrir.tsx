@@ -62,10 +62,6 @@ function Decouvrir() {
     const defaultCity = (mine.discover_city || mine.city || "").trim();
     const isPassport = !!(mine.discover_country || mine.discover_city);
     setPassport(isPassport ? { country: mine.discover_country, city: mine.discover_city } : null);
-    if (!isPremium) {
-      if (!fCountry && defaultCountry) setFCountry(defaultCountry);
-      if (!fCity && defaultCity) setFCity(defaultCity);
-    }
 
     const { data: liked } = await supabase.from("likes").select("to_user").eq("from_user", u.user.id);
     const { data: blocked } = await supabase.from("blocks").select("blocked_id").eq("blocker_id", u.user.id);
@@ -75,11 +71,11 @@ function Decouvrir() {
       .eq("onboarded", true).limit(50);
     let list = (data ?? []).filter((p) => !excluded.has(p.user_id)) as Profile[];
 
-    const countryFilter = (isPremium ? fCountry : (fCountry || defaultCountry)).trim().toLowerCase();
-    const cityFilter = (isPremium ? fCity : (fCity || defaultCity)).trim().toLowerCase();
+    const countryFilter = (isPremium ? fCountry : defaultCountry).trim().toLowerCase();
+    const cityFilter = (isPremium ? fCity : defaultCity).trim().toLowerCase();
     if (countryFilter) list = list.filter((p) => (p.country ?? "").toLowerCase().includes(countryFilter));
     if (cityFilter) list = list.filter((p) => (p.city ?? "").toLowerCase().includes(cityFilter));
-    if (fGoal) list = list.filter((p) => p.goals?.includes(fGoal));
+    if (isPremium && fGoal) list = list.filter((p) => p.goals?.includes(fGoal));
     list = list.filter((p) => {
       const a = age(p.birthdate);
       if (a === null) return true;
