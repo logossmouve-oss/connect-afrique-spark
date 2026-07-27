@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { SiteHeader } from "@/components/monwe/SiteHeader";
+import { useOnlineHeartbeat, isOnline } from "@/hooks/use-online";
 
 export const Route = createFileRoute("/_authenticated/messages")({
   head: () => ({ meta: [{ title: "Messages — MonWé" }, { name: "robots", content: "noindex" }] }),
@@ -11,7 +12,8 @@ export const Route = createFileRoute("/_authenticated/messages")({
 type Row = {
   id: string; match_id: string; last_message_at: string | null;
   reveal_a: boolean; reveal_b: boolean;
-  other: { pseudo: string | null; monwe_code: string | null; real_name: string | null; user_id: string } | null;
+  other: { pseudo: string | null; monwe_code: string | null; real_name: string | null; user_id: string; last_seen: string | null } | null;
+  unread_count: number;
 };
 
 function Messages() {
