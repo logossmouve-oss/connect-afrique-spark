@@ -55,8 +55,17 @@ function Decouvrir() {
     if (!u.user) return;
     setMe(u.user.id);
 
-    const { data: mine } = await supabase.from("profiles").select("onboarded").eq("user_id", u.user.id).maybeSingle();
+    const { data: mine } = await supabase.from("profiles").select("onboarded,country,city,discover_country,discover_city").eq("user_id", u.user.id).maybeSingle();
     if (!mine?.onboarded) { navigate({ to: "/onboarding" }); return; }
+
+    const defaultCountry = (mine.discover_country || mine.country || "").trim();
+    const defaultCity = (mine.discover_city || mine.city || "").trim();
+    const isPassport = !!(mine.discover_country || mine.discover_city);
+    setPassport(isPassport ? { country: mine.discover_country, city: mine.discover_city } : null);
+    if (!isPremium) {
+      if (!fCountry && defaultCountry) setFCountry(defaultCountry);
+      if (!fCity && defaultCity) setFCity(defaultCity);
+    }
 
     const { data: liked } = await supabase.from("likes").select("to_user").eq("from_user", u.user.id);
     const { data: blocked } = await supabase.from("blocks").select("blocked_id").eq("blocker_id", u.user.id);
@@ -65,15 +74,18 @@ function Decouvrir() {
     const { data } = await supabase.from("profiles").select("user_id,pseudo,monwe_code,bio,country,city,interests,goals,languages,birthdate,prompts")
       .eq("onboarded", true).limit(50);
     let list = (data ?? []).filter((p) => !excluded.has(p.user_id)) as Profile[];
-    if (isPremium) {
-      if (fGoal) list = list.filter((p) => p.goals?.includes(fGoal));
-      if (fCountry) list = list.filter((p) => (p.country ?? "").toLowerCase().includes(fCountry.toLowerCase()));
-      list = list.filter((p) => {
-        const a = age(p.birthdate);
-        if (a === null) return true;
-        return a >= fAgeMin && a <= fAgeMax;
-      });
-    }
+
+    const countryFilter = (isPremium ? fCountry : (fCountry || defaultCountry)).trim().toLowerCase();
+    const cityFilter = (isPremium ? fCity : (fCity || defaultCity)).trim().toLowerCase();
+    if (countryFilter) list = list.filter((p) => (p.country ?? "").toLowerCase().includes(countryFilter));
+    if (cityFilter) list = list.filter((p) => (p.city ?? "").toLowerCase().includes(cityFilter));
+    if (fGoal) list = list.filter((p) => p.goals?.includes(fGoal));
+    list = list.filter((p) => {
+      const a = age(p.birthdate);
+      if (a === null) return true;
+      return a >= fAgeMin && a <= fAgeMax;
+    });
+
     setProfiles(list);
 
     const today = new Date().toISOString().slice(0, 10);
