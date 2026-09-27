@@ -38,10 +38,7 @@ function MesLikes() {
         .order("created_at", { ascending: false });
       if (!likes || likes.length === 0) { setLoading(false); return; }
       const ids = likes.map((l) => l.from_user);
-      const { data: profiles } = await supabase
-        .from("profiles")
-        .select("user_id, pseudo, monwe_code, city, country, bio, goals")
-        .in("user_id", ids);
+      const { data: profiles } = await supabase.rpc("get_public_profiles", { _ids: ids });
       const byId = new Map((profiles ?? []).map((p) => [p.user_id, p]));
       const merged: Liker[] = likes
         .map((l) => {

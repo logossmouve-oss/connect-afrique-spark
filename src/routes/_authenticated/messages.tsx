@@ -37,8 +37,17 @@ function Messages() {
       const convIds = (convs ?? []).map((c) => c.id);
 
       const otherIds = (matches ?? []).map((m) => m.user_a === u.user!.id ? m.user_b : m.user_a);
-      const { data: profs } = await supabase.from("profiles")
-        .select("user_id,pseudo,monwe_code,real_name,last_seen").in("user_id", otherIds);
+      const { data: pub } = await supabase.rpc("get_public_profiles", { _ids: otherIds });
+      const revealedIds = (convs ?? []).filter((c) => c.reveal_a && c.reveal_b).map((c) => {
+        const mm = (matches ?? []).find((x) => x.id === c.match_id);
+        return mm ? (mm.user_a === u.user!.id ? mm.user_b : mm.user_a) : null;
+      }).filter((x): x is string => !!x);
+      const realNames = new Map<string, string | null>();
+      await Promise.all(revealedIds.map(async (oid) => {
+        const { data: r } = await supabase.rpc("get_revealed_profile", { _other: oid });
+        if (r?.[0]) realNames.set(oid, r[0].real_name);
+      }));
+      const profs = (pub ?? []).map((p) => ({ user_id: p.user_id, pseudo: p.pseudo, monwe_code: p.monwe_code, last_seen: p.last_seen, real_name: realNames.get(p.user_id) ?? null }));
 
       const { data: unread } = await supabase.from("messages")
         .select("conversation_id, id", { count: "exact", head: false })
