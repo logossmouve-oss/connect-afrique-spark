@@ -18,15 +18,11 @@ export const Route = createFileRoute("/_authenticated/decouvrir")({
 type Profile = {
   user_id: string; pseudo: string | null; monwe_code: string | null; bio: string | null;
   country: string | null; city: string | null; interests: string[]; goals: string[]; languages: string[];
-  birthdate: string | null; prompts?: { question: string; answer: string }[] | null;
+  age: number | null; prompts?: { question: string; answer: string }[] | null;
 };
 type Action = { profile: Profile; kind: "like" | "super" | "pass"; likeId?: string };
 
-function age(b: string | null) {
-  if (!b) return null;
-  const d = new Date(b);
-  return Math.floor((Date.now() - d.getTime()) / (365.25 * 24 * 3600 * 1000));
-}
+
 
 function Decouvrir() {
   const navigate = useNavigate();
@@ -67,9 +63,8 @@ function Decouvrir() {
     const { data: blocked } = await supabase.from("blocks").select("blocked_id").eq("blocker_id", u.user.id);
     const excluded = new Set<string>([u.user.id, ...(liked?.map((l) => l.to_user) ?? []), ...(blocked?.map((b) => b.blocked_id) ?? [])]);
 
-    const { data } = await supabase.from("profiles").select("user_id,pseudo,monwe_code,bio,country,city,interests,goals,languages,birthdate,prompts")
-      .eq("onboarded", true).limit(50);
-    let list = (data ?? []).filter((p) => !excluded.has(p.user_id)) as Profile[];
+    const { data } = await supabase.rpc("get_public_profiles", { _limit: 200 });
+    let list = ((data ?? []) as unknown as Profile[]).filter((p) => !excluded.has(p.user_id));
 
     const countryFilter = (isPremium ? fCountry : defaultCountry).trim().toLowerCase();
     const cityFilter = (isPremium ? fCity : defaultCity).trim().toLowerCase();
@@ -77,7 +72,7 @@ function Decouvrir() {
     if (cityFilter) list = list.filter((p) => (p.city ?? "").toLowerCase().includes(cityFilter));
     if (isPremium && fGoal) list = list.filter((p) => p.goals?.includes(fGoal));
     list = list.filter((p) => {
-      const a = age(p.birthdate);
+      const a = p.age;
       if (a === null) return true;
       return a >= fAgeMin && a <= fAgeMax;
     });
@@ -228,7 +223,7 @@ function Decouvrir() {
                     <article className="h-full rounded-3xl border border-border bg-card p-6 shadow-warm select-none">
                       <div className="flex items-center justify-between">
                         <div>
-                          <div className="font-display text-2xl font-bold">{p.pseudo ?? "Anonyme"}{age(p.birthdate) ? `, ${age(p.birthdate)}` : ""}</div>
+                          <div className="font-display text-2xl font-bold">{p.pseudo ?? "Anonyme"}{p.age ? `, ${p.age}` : ""}</div>
                           <div className="text-sm text-muted-foreground">{[p.city, p.country].filter(Boolean).join(", ")}</div>
                         </div>
                         <span className="monwe-chip">{p.monwe_code}</span>

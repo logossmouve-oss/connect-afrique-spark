@@ -2,6 +2,9 @@ import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
 
+type P = { pseudo: string | null; bio: string | null; goals: unknown; interests: string[]; languages: string[]; country: string | null; city: string | null; prompts: unknown; age: number | null };
+const strip = (p: P) => ({ pseudo: p.pseudo, bio: p.bio, goals: p.goals, interests: p.interests, languages: p.languages, country: p.country, city: p.city, prompts: p.prompts, age: p.age });
+
 const Input = z.object({ targetUserId: z.string().uuid() });
 
 export const computeCompatibility = createServerFn({ method: "POST" })
@@ -19,16 +22,13 @@ export const computeCompatibility = createServerFn({ method: "POST" })
       .maybeSingle();
     if (cached) return cached;
 
-    const { data: profiles } = await supabase
-      .from("profiles")
-      .select("user_id, pseudo, bio, goals, interests, languages, country, city, prompts")
-      .in("user_id", [a, b]);
+    const { data: profiles } = await supabase.rpc("get_public_profiles", { _ids: [a, b] });
     if (!profiles || profiles.length < 2) throw new Error("Profils introuvables");
 
     const key = process.env.LOVABLE_API_KEY;
     if (!key) throw new Error("LOVABLE_API_KEY manquant");
 
-    const prompt = `Tu es un expert relations humaines pour une app africaine de rencontres (amour/amitié/pro). Compare ces deux profils et donne un score de compatibilité de 0 à 100, plus une phrase courte et chaleureuse (max 25 mots) en français expliquant pourquoi. Réponds STRICTEMENT en JSON: {"score": number, "rationale": string}.\n\nProfil 1: ${JSON.stringify(profiles[0])}\n\nProfil 2: ${JSON.stringify(profiles[1])}`;
+    const prompt = `Tu es un expert relations humaines pour une app africaine de rencontres (amour/amitié/pro). Compare ces deux profils et donne un score de compatibilité de 0 à 100, plus une phrase courte et chaleureuse (max 25 mots) en français expliquant pourquoi. Réponds STRICTEMENT en JSON: {"score": number, "rationale": string}.\n\nProfil 1: ${JSON.stringify(strip(profiles[0]))}\n\nProfil 2: ${JSON.stringify(strip(profiles[1]))}`;
 
     const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",

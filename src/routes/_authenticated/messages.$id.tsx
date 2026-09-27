@@ -38,9 +38,14 @@ function Conversation() {
       const { data: m } = await supabase.from("matches").select("*").eq("id", c.match_id).maybeSingle();
       if (m) {
         const otherId = m.user_a === u.user.id ? m.user_b : m.user_a;
-        const { data: p } = await supabase.from("profiles")
-          .select("user_id,pseudo,monwe_code,real_name,bio,city,country,last_seen").eq("user_id", otherId).maybeSingle();
-        setOther(p);
+        const { data: pub } = await supabase.rpc("get_public_profiles", { _ids: [otherId] });
+        const p = pub?.[0] ?? null;
+        let real_name: string | null = null;
+        if (c.reveal_a && c.reveal_b) {
+          const { data: r } = await supabase.rpc("get_revealed_profile", { _other: otherId });
+          real_name = r?.[0]?.real_name ?? null;
+        }
+        setOther(p ? { ...p, real_name } : null);
       }
 
       const { data: msgs } = await supabase.from("messages")

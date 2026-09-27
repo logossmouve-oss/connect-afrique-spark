@@ -68,6 +68,8 @@ function Profil() {
     const path = `${profile.user_id}/${Date.now()}-${file.name}`;
     const { error } = await supabase.storage.from("avatars").upload(path, file, { upsert: true });
     if (error) { setUploading(false); return toast.error(error.message); }
+    const blurred = await makeBlurred(file);
+    if (blurred) await supabase.storage.from("avatars").upload(`${profile.user_id}/public/avatar.jpg`, blurred, { upsert: true, contentType: "image/jpeg" });
     await supabase.from("profiles").update({ photo_url: path }).eq("user_id", profile.user_id);
     setProfile({ ...profile, photo_url: path });
     const { data: signed } = await supabase.storage.from("avatars").createSignedUrl(path, 3600);
@@ -193,4 +195,17 @@ function Profil() {
       </main>
     </div>
   );
+}
+// Version floutée stockée séparément : seule image lisible par les autres avant révélation.
+async function makeBlurred(file: File): Promise<Blob | null> {
+  try {
+    const bmp = await createImageBitmap(file);
+    const w = 64, h = Math.max(1, Math.round((bmp.height / bmp.width) * 64));
+    const small = document.createElement("canvas"); small.width = w; small.height = h;
+    small.getContext("2d")!.drawImage(bmp, 0, 0, w, h);
+    const out = document.createElement("canvas"); out.width = 320; out.height = Math.round(320 * h / w);
+    const ctx = out.getContext("2d")!; ctx.filter = "blur(12px)";
+    ctx.drawImage(small, 0, 0, out.width, out.height);
+    return await new Promise((r) => out.toBlob((b) => r(b), "image/jpeg", 0.7));
+  } catch { return null; }
 }
