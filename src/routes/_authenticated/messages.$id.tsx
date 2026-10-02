@@ -100,10 +100,7 @@ function Conversation() {
 
   async function reveal() {
     if (!conv || !me) return;
-    const { data: m } = await supabase.from("matches").select("user_a,user_b").eq("id", conv.match_id).maybeSingle();
-    if (!m) return;
-    const update = m.user_a === me ? { reveal_a: true } : { reveal_b: true };
-    const { error } = await supabase.from("conversations").update(update).eq("id", conv.id);
+    const { error } = await supabase.rpc("reveal_myself", { _conversation_id: conv.id });
     if (error) toast.error(error.message);
     else toast.success("Tu as choisi de te révéler ✨");
   }
