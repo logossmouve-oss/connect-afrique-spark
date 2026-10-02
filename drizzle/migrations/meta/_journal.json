@@ -8,6 +8,13 @@
       "when": 1790506502897,
       "tag": "0000_secure_profiles_photos",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1790942960717,
+      "tag": "0001_reveal_own_flag_only",
+      "breakpoints": true
     }
   ]
 }
