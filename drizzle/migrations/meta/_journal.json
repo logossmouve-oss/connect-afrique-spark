@@ -15,6 +15,13 @@
       "when": 1790942960717,
       "tag": "0001_reveal_own_flag_only",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1791069947313,
+      "tag": "0002_secure_messages_update",
+      "breakpoints": true
     }
   ]
 }
