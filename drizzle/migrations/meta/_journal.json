@@ -22,6 +22,13 @@
       "when": 1791069947313,
       "tag": "0002_secure_messages_update",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1791192022332,
+      "tag": "0003_protect_profile_sensitive_fields",
+      "breakpoints": true
     }
   ]
 }
