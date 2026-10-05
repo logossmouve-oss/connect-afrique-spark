@@ -347,6 +347,7 @@ export type Database = {
         Args: { _owner: string; _viewer: string }
         Returns: boolean
       }
+      complete_onboarding: { Args: never; Returns: undefined }
       generate_monwe_code: { Args: never; Returns: string }
       get_public_profiles: {
         Args: { _ids?: string[]; _limit?: number }

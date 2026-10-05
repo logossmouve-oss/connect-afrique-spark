@@ -81,10 +81,12 @@ function Onboarding() {
     const { data: u } = await supabase.auth.getUser();
     if (!u.user) return;
     const { error } = await supabase.from("profiles").update({
-      pseudo, bio, country, city, birthdate, goals, interests, languages, prompts, onboarded: true,
+      pseudo, bio, country, city, birthdate, goals, interests, languages, prompts,
     }).eq("user_id", u.user.id);
+    if (error) { setLoading(false); return toast.error(error.message); }
+    const { error: obErr } = await supabase.rpc("complete_onboarding");
     setLoading(false);
-    if (error) return toast.error(error.message);
+    if (obErr) return toast.error(obErr.message);
     toast.success("Profil enregistré !");
     navigate({ to: "/decouvrir" });
   }
