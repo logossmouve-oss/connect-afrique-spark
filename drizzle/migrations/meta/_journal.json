@@ -36,6 +36,13 @@
       "when": 1791406644141,
       "tag": "0004_secure_compatibility_scores",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1791406993327,
+      "tag": "0005_lock_compatibility_requests",
+      "breakpoints": true
     }
   ]
 }

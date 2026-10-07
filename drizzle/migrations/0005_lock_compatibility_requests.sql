@@ -1,0 +1,1 @@
+REVOKE ALL ON public.compatibility_requests FROM anon, authenticated;
